@@ -1,81 +1,73 @@
-import networkx as nx
+from typing import List
+from graph import DirectedGraph
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
+import networkx as nx
+import time
 
-order = []
+class DFS:
+    def __init__(self, graph: DirectedGraph) -> None:
+        self.graph: DirectedGraph = graph
+        self.visited: List[bool] = [False] * graph.vertices
+        self.rec_stack: List[bool] = [False] * graph.vertices
+        self.order: List[int] = []
+        self.has_cycle: bool = False
 
-def add_edge(adj, vertex1, vertex2):
-    # Add edge from vertex s to t
-    adj[vertex1].append(vertex2)
+    def _dfs_recursion(self, vertex: int) -> None:
+        """Helper method for recursion"""
+        self.visited[vertex] = True
+        self.rec_stack[vertex] = True
+        self.order.append(vertex)
 
-def dfs_recursion(adj, visited, vertex):
-    # Mark the current vertex as visited
-    visited[vertex] = True
-    order.append(vertex)
+        for neighbor in self.graph.adjacency[vertex]:
+            if not self.visited[neighbor]:
+                self._dfs_recursion(neighbor)
+            elif self.rec_stack[neighbor]:
+                self.has_cycle = True
+        
+        self.rec_stack[vertex] = False
 
-    # Print the current vertex
-    print(vertex, end=" ")
+    def dfs_traverse(self, start_vertex: int) -> List[int]:
+        """Performs recursive DFS algorithm in a directed graph"""
+        self._dfs_recursion(start_vertex)
+        return self.order
 
-    # Recursively visit all adjacent vertices
-    # that are not visited yet
-    for i in adj[vertex]:
-        if not visited[i]:
-            dfs_recursion(adj, visited, i)
+    def visualize_search(self) -> None:
+        """Visualizes the DFS traversal"""
+        graph = self.graph.to_nx_graph()
+        pos = nx.spring_layout(graph)
+        visited_nodes = set()
 
-def dfs(adj, start_vertex):
-    visited = [False] * len(adj)
-    # Call the recursive DFS function
-    dfs_recursion(adj, visited, start_vertex)
-    return order
-
-
-def animate_dfs(adj, visited_order):
-    G = nx.DiGraph()
-    for u in range(len(adj)):
-        for v in adj[u]:
-            G.add_edge(u, v)
-
-    fig, ax = plt.subplots()
-    pos = nx.spring_layout(G)
-    # Make every node the same color at the beginning
-    color_map = ['lightblue'] * len(adj)
-
-    def update(frame):
-        node = visited_order[frame]
-        color_map[node] = plt.cm.viridis(frame / max(1, len(visited_order) - 1))
-        ax.clear()
-        nx.draw(
-            G,
-            pos=pos,
-            with_labels=True,
-            node_color=color_map,
-            edge_color='gray',
-            arrowsize=15,
-            arrowstyle='->',
-            ax=ax
-        )
-
-    ani = animation.FuncAnimation(
-        fig,
-        update,
-        frames=len(visited_order),
-        interval=1000,
-        repeat=False
-    )
-    plt.show()
+        plt.figure()
+        plt.title("DFS visualization in directed graph")
+        for i, node in enumerate(self.order, start=1):
+            plt.clf()
+            visited_nodes.add(node)
+            plt.title("DFS visualization in directed graph")
+            nx.draw(graph,
+                    pos,
+                    with_labels=True,
+                    node_color=['r' if n == node else 'grey' if n in visited_nodes else 'g' for n in graph.nodes])
+            plt.draw()
+            plt.pause(1)
+        plt.show()
+        time.sleep(0.5)
 
 if __name__ == "__main__":
-    V = 5
+    g = DirectedGraph(10)
 
-    adj = [[] for _ in range(V)]
+    g.add_edge(0, 1)
+    g.add_edge(0, 2)
+    g.add_edge(1, 3)
+    g.add_edge(1, 4)
+    g.add_edge(2, 5)
+    g.add_edge(2, 6)
+    g.add_edge(3, 7)
+    g.add_edge(4, 7)
+    g.add_edge(5, 8)
+    g.add_edge(6, 8)
+    g.add_edge(7, 9)
+    g.add_edge(8, 9)
 
-    edges = [[1, 2], [1, 0], [2, 0], [2, 3], [2, 4]]
-    edges = [[0, 1], [0, 2], [1, 3], [1, 4], [2, 4]]
-
-    for e in edges:
-        add_edge(adj, e[0], e[1])
-
-    source = 0
-    print("DFS from source:", source)
-    visited_order = dfs(adj, source)
-    animate_dfs(adj, visited_order)
+    dfs = DFS(g)
+    dfs.dfs_traverse(0)
+    dfs.visualize_search()

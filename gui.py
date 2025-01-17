@@ -5,7 +5,7 @@ import time
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Tkinter OOP Example")
+        self.title("DFS Algorithm")
         self.geometry("400x300")
         self.create_widgets()
 
