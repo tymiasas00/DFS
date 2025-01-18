@@ -1,37 +1,107 @@
 import tkinter as tk
+from tkinter import ttk
+from tkinter import filedialog as fd
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from graph import DirectedGraph
+from dfs import DFS  # Assuming your DFS class is in a file named dfs.py
+import json
 
-class GraphVisualizer:
+class App:
     def __init__(self, root):
         self.root = root
-        self.root.title("Directed Graph DFS Visualizer")
+        self.root.title("DFS Visualization GUI")
+        self.filename = None
+        self.loaded_graphs = {}  # new dictionary to store loaded graphs
 
-        # Left Frame
-        self.left_frame = tk.Frame(self.root)
-        self.left_frame.pack(side=tk.LEFT, padx=10, pady=10, fill=tk.Y)
+        # Frame for Buttons
+        self.frame = ttk.Frame(root)
+        self.frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-        # Listbox for graphs
-        self.graph_listbox = tk.Listbox(self.left_frame, width=30, height=15)
-        self.graph_listbox.pack(pady=5)
+        # Visualize Button
+        self.visualize_button = ttk.Button(self.frame, text="Visualize DFS", command=self.visualize_search)
+        self.visualize_button.pack(side=tk.TOP, pady=10)
 
-        # Buttons
-        self.load_button = tk.Button(self.left_frame, text="Load Graphs", command=None)
-        self.load_button.pack(pady=5)
+        # Load json Button
+        self.load_json_button = ttk.Button(self.frame, text="Load Graphs from json", command=self.select_json_file)
+        self.load_json_button.pack()
 
-        self.visualize_button = tk.Button(self.left_frame, text="Run Visualization", command=None) # TODO : Implement visualization from dfs class
-        self.visualize_button.pack(pady=5)
+        self.loaded_graph_list = tk.Listbox()
+        self.loaded_graph_list.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-        # Right Frame
-        self.right_frame = tk.Frame(self.root)
-        self.right_frame.pack(side=tk.RIGHT, padx=10, pady=10, fill=tk.BOTH, expand=True)
+        # Starting Node Entry
+        self.start_node_label = ttk.Label(self.frame, text="Start Node:")
+        self.start_node_label.pack(side=tk.TOP, pady=5)
+        self.start_node_entry = ttk.Entry(self.frame)
+        self.start_node_entry.pack(side=tk.TOP, pady=5)
+    
+    def select_json_file(self):
+        """Opens file dialog to load"""
+        filetypes = (
+            ('JSON', "*.json"),
+            ('All files', '*.*')
+        )
 
-        # Placeholder for graphs
-        self.graphs = {}
+        self.filename = fd.askopenfilename(
+            title='Open a file',
+            filetypes=filetypes
+        )
+        if self.filename:
+            self.load_graphs_from_json(self.filename)
+        
 
-     
+    def load_graphs_from_json(self, filename):
+        """Loads graphs from a JSON file and populates the Listbox with graph names."""
+        with open(filename, 'r') as file:
+            graphs = json.load(file)
+            self.loaded_graph_list.delete(0, tk.END)  # Clear the Listbox
+            for graph_name, adjacency_list in graphs.items():
+                self.loaded_graph_list.insert(tk.END, graph_name)
+                self.loaded_graphs[graph_name] = adjacency_list
+    
+    def display_cycle_message(self):
+        """Displays a message box indicating the presence of a cycle."""
+        tk.messagebox.showinfo("Cycle Detected", "The graph has a cycle.")
+
+    def display_incorrect_node_message(self):
+        """Displays a message box indicating an incorrect node."""
+        tk.messagebox.showinfo("Incorrect Node", "The start node is not in the graph.")
+    
+
+    def visualize_search(self):
+        """Visualizes DFS on the selected graph."""
+        selection = self.loaded_graph_list.curselection()
+        if not selection:
+            print("No graph selected")
+            return
+        selected_graph_name = self.loaded_graph_list.get(selection)
+        print(f"Selected graph: {selected_graph_name}")
+
+        adjacency_list = self.loaded_graphs[selected_graph_name]
+        print(f"Adjacency list: {adjacency_list}")
+
+        # Create a DirectedGraph from the adjacency list
+        max_node = max(max(edge) for edge in adjacency_list)
+        g = DirectedGraph(max_node + 1)
+        for edge in adjacency_list:
+            g.add_edge(edge[0], edge[1])
+
+        # Get the starting node from the entry
+        start_node = int(self.start_node_entry.get())
+        if start_node < 0 or start_node > max_node:
+            self.display_incorrect_node_message()
+            return
+
+        # Set the graph for DFS and visualize
+        dfs = DFS(g)
+        dfs.dfs_traverse(start_node)
+        if dfs.has_cycle:
+            self.display_cycle_message()
+        dfs.visualize_search()
 
 
 if __name__ == "__main__":
+    
+
     root = tk.Tk()
-    app = GraphVisualizer(root)
+    app = App(root)
     root.mainloop()
