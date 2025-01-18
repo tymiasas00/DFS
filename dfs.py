@@ -36,9 +36,14 @@ class DFS:
         graph = self.graph.to_nx_graph()
         pos = nx.spring_layout(graph)
         visited_nodes = set()
+        
+        def on_close(event):
+            plt.close('all')
 
-        plt.figure()
+        fig = plt.figure()
+        fig.canvas.mpl_connect('close_event', on_close)
         plt.title("DFS visualization in directed graph")
+        
         for i, node in enumerate(self.order, start=1):
             plt.clf()
             visited_nodes.add(node)

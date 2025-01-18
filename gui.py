@@ -3,13 +3,16 @@ from tkinter import ttk
 from tkinter import filedialog as fd
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from graph import DirectedGraph
-from dfs import DFS  # Assuming your DFS class is in a file named dfs.py
+from dfs import DFS
 import json
+import sys
 
 class App:
     def __init__(self, root):
         self.root = root
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.root.title("DFS Visualization GUI")
+        
         self.filename = None
         self.loaded_graphs = {}  # dictionary to store loaded graphs
 
@@ -34,6 +37,13 @@ class App:
         self.start_node_label.pack(side=tk.TOP, pady=5)
         self.start_node_entry = ttk.Entry(self.frame)
         self.start_node_entry.pack(side=tk.TOP, pady=5)
+
+    def on_closing(self) -> None:
+        """Ask for confirmation before closing the window and destroy the window."""
+        if tk.messagebox.askokcancel("Quit", "Do you want to quit?"):
+            self.root.quit()
+            self.root.destroy()
+            sys.exit()
     
     def select_json_file(self) -> None:
         """Opens file dialog to load"""
