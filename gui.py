@@ -11,7 +11,7 @@ class App:
         self.root = root
         self.root.title("DFS Visualization GUI")
         self.filename = None
-        self.loaded_graphs = {}  # new dictionary to store loaded graphs
+        self.loaded_graphs = {}  # dictionary to store loaded graphs
 
         # Frame for Buttons
         self.frame = ttk.Frame(root)
@@ -25,6 +25,7 @@ class App:
         self.load_json_button = ttk.Button(self.frame, text="Load Graphs from json", command=self.select_json_file)
         self.load_json_button.pack()
 
+        # Listbox for loaded graphs
         self.loaded_graph_list = tk.Listbox()
         self.loaded_graph_list.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
 
@@ -34,7 +35,7 @@ class App:
         self.start_node_entry = ttk.Entry(self.frame)
         self.start_node_entry.pack(side=tk.TOP, pady=5)
     
-    def select_json_file(self):
+    def select_json_file(self) -> None:
         """Opens file dialog to load"""
         filetypes = (
             ('JSON', "*.json"),
@@ -42,14 +43,14 @@ class App:
         )
 
         self.filename = fd.askopenfilename(
-            title='Open a file',
+            title='Select json file containing adjacency lists', 
             filetypes=filetypes
         )
         if self.filename:
             self.load_graphs_from_json(self.filename)
         
 
-    def load_graphs_from_json(self, filename):
+    def load_graphs_from_json(self, filename) -> None:
         """Loads graphs from a JSON file and populates the Listbox with graph names."""
         with open(filename, 'r') as file:
             graphs = json.load(file)
@@ -58,16 +59,16 @@ class App:
                 self.loaded_graph_list.insert(tk.END, graph_name)
                 self.loaded_graphs[graph_name] = adjacency_list
     
-    def display_cycle_message(self):
+    def display_cycle_message(self) -> None:
         """Displays a message box indicating the presence of a cycle."""
         tk.messagebox.showinfo("Cycle Detected", "The graph has a cycle.")
 
-    def display_incorrect_node_message(self):
+    def display_incorrect_node_message(self) -> None:
         """Displays a message box indicating an incorrect node."""
         tk.messagebox.showinfo("Incorrect Node", "The start node is not in the graph.")
     
 
-    def visualize_search(self):
+    def visualize_search(self) -> None:
         """Visualizes DFS on the selected graph."""
         selection = self.loaded_graph_list.curselection()
         if not selection:

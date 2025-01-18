@@ -52,22 +52,4 @@ class DFS:
         plt.show()
         time.sleep(0.5)
 
-if __name__ == "__main__":
-    g = DirectedGraph(10)
-
-    g.add_edge(0, 1)
-    g.add_edge(0, 2)
-    g.add_edge(1, 3)
-    g.add_edge(1, 4)
-    g.add_edge(2, 5)
-    g.add_edge(2, 6)
-    g.add_edge(3, 7)
-    g.add_edge(4, 7)
-    g.add_edge(5, 8)
-    g.add_edge(6, 8)
-    g.add_edge(7, 9)
-    g.add_edge(8, 9)
-
-    dfs = DFS(g)
-    dfs.dfs_traverse(0)
-    dfs.visualize_search()
+    
